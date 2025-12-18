@@ -442,38 +442,6 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Stats rapides
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: StatsCard(
-                      title: 'Aujourd\'hui',
-                      value: _interventions
-                          .where((i) => i.datePlanifiee.day == DateTime.now().day)
-                          .length
-                          .toString(),
-                      icon: Icons.today,
-                      color: AppTheme.primaryColor,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: StatsCard(
-                      title: 'En cours',
-                      value: _interventions
-                          .where((i) => i.statut == 'En_cours')
-                          .length
-                          .toString(),
-                      icon: Icons.schedule,
-                      color: AppTheme.secondaryColor,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
             // Interventions du jour
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),

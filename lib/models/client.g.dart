@@ -28,13 +28,14 @@ class ClientAdapter extends TypeAdapter<Client> {
       type: fields[8] as String,
       refrigerateurIds: (fields[9] as List).cast<String>(),
       dateInscription: fields[10] as DateTime,
+      photos: (fields[11] as List).cast<String>(),
     );
   }
 
   @override
   void write(BinaryWriter writer, Client obj) {
     writer
-      ..writeByte(11)
+      ..writeByte(12)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -56,7 +57,9 @@ class ClientAdapter extends TypeAdapter<Client> {
       ..writeByte(9)
       ..write(obj.refrigerateurIds)
       ..writeByte(10)
-      ..write(obj.dateInscription);
+      ..write(obj.dateInscription)
+      ..writeByte(11)
+      ..write(obj.photos);
   }
 
   @override

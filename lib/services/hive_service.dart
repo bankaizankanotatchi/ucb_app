@@ -2108,4 +2108,453 @@ static void updateRefrigerateurStatus(String refrigerateurId, String newStatus) 
   refrigerateur.statut = newStatus;
   refrigerateur.save();
 }
+
+// ============================================================
+//                      GESTION PHOTOS CLIENT
+// ============================================================
+
+/// Ajouter une photo à un client
+static Future<bool> addPhotoToClient({
+  required String clientId,
+  required String cheminPhoto,
+}) async {
+  try {
+    final client = getClientById(clientId);
+    if (client == null) {
+      print('❌ Client non trouvé: $clientId');
+      return false;
+    }
+
+    // ✅ Créer une copie modifiable de la liste
+    final List<String> updatedPhotos =
+        List<String>.from(client.photos);
+
+    updatedPhotos.add(cheminPhoto);
+
+    // ✅ Réassigner la liste
+    client.photos = updatedPhotos;
+
+    await client.save();
+
+    print(
+      '✅ Photo ajoutée au client: $clientId (total: ${client.photos.length})',
+    );
+    return true;
+  } catch (e) {
+    print('❌ Erreur addPhotoToClient: $e');
+    return false;
+  }
+}
+
+
+/// Ajouter plusieurs photos à un client
+static Future<bool> addMultiplePhotosToClient({
+  required String clientId,
+  required List<String> cheminsPhotos,
+}) async {
+  try {
+    final client = getClientById(clientId);
+    if (client == null) {
+      print('❌ Client non trouvé: $clientId');
+      return false;
+    }
+    
+    client.photos.addAll(cheminsPhotos);
+    await client.save();
+    
+    print('✅ ${cheminsPhotos.length} photos ajoutées au client: $clientId (total: ${client.photos.length})');
+    return true;
+  } catch (e) {
+    print('❌ Erreur addMultiplePhotosToClient: $e');
+    return false;
+  }
+}
+
+/// Obtenir toutes les photos d'un client
+static List<String> getClientPhotos(String clientId) {
+  final client = getClientById(clientId);
+  if (client == null) {
+    print('⚠️ Client non trouvé: $clientId');
+    return [];
+  }
+  
+  return client.photos;
+}
+
+/// Obtenir une photo spécifique d'un client par index
+static String? getClientPhoto(String clientId, int index) {
+  final photos = getClientPhotos(clientId);
+  if (index < 0 || index >= photos.length) {
+    print('⚠️ Index $index invalide pour client $clientId');
+    return null;
+  }
+  
+  return photos[index];
+}
+
+/// Supprimer une photo d'un client par chemin
+static Future<bool> deletePhotoFromClient({
+  required String clientId,
+  required String cheminPhoto,
+}) async {
+  try {
+    final client = getClientById(clientId);
+    if (client == null) {
+      print('❌ Client non trouvé: $clientId');
+      return false;
+    }
+    
+    final removed = client.photos.remove(cheminPhoto);
+    
+    if (removed) {
+      await client.save();
+      print('✅ Photo supprimée du client: $clientId');
+    } else {
+      print('⚠️ Photo non trouvée pour client: $clientId');
+    }
+    
+    return removed;
+  } catch (e) {
+    print('❌ Erreur deletePhotoFromClient: $e');
+    return false;
+  }
+}
+
+/// Supprimer une photo d'un client par index
+static Future<bool> deletePhotoFromClientByIndex({
+  required String clientId,
+  required int index,
+}) async {
+  try {
+    final client = getClientById(clientId);
+    if (client == null) {
+      print('❌ Client non trouvé: $clientId');
+      return false;
+    }
+    
+    if (index < 0 || index >= client.photos.length) {
+      print('❌ Index $index invalide pour client $clientId');
+      return false;
+    }
+    
+    client.photos.removeAt(index);
+    await client.save();
+    
+    print('✅ Photo à l\'index $index supprimée du client: $clientId');
+    return true;
+  } catch (e) {
+    print('❌ Erreur deletePhotoFromClientByIndex: $e');
+    return false;
+  }
+}
+
+/// Vider toutes les photos d'un client
+static Future<bool> clearAllClientPhotos(String clientId) async {
+  try {
+    final client = getClientById(clientId);
+    if (client == null) {
+      print('❌ Client non trouvé: $clientId');
+      return false;
+    }
+    
+    final count = client.photos.length;
+    client.photos.clear();
+    await client.save();
+    
+    print('✅ $count photos supprimées du client: $clientId');
+    return true;
+  } catch (e) {
+    print('❌ Erreur clearAllClientPhotos: $e');
+    return false;
+  }
+}
+
+/// Mettre à jour une photo d'un client
+static Future<bool> updateClientPhoto({
+  required String clientId,
+  required int index,
+  required String nouveauChemin,
+}) async {
+  try {
+    final client = getClientById(clientId);
+    if (client == null) {
+      print('❌ Client non trouvé: $clientId');
+      return false;
+    }
+    
+    if (index < 0 || index >= client.photos.length) {
+      print('❌ Index $index invalide pour client $clientId');
+      return false;
+    }
+    
+    final ancienChemin = client.photos[index];
+    client.photos[index] = nouveauChemin;
+    await client.save();
+    
+    print('✅ Photo mise à jour pour client: $clientId');
+    print('   Ancien: $ancienChemin');
+    print('   Nouveau: $nouveauChemin');
+    
+    return true;
+  } catch (e) {
+    print('❌ Erreur updateClientPhoto: $e');
+    return false;
+  }
+}
+
+/// Vérifier si un client a des photos
+static bool clientHasPhotos(String clientId) {
+  final client = getClientById(clientId);
+  if (client == null) {
+    print('⚠️ Client non trouvé: $clientId');
+    return false;
+  }
+  
+  return client.photos.isNotEmpty;
+}
+
+/// Compter le nombre de photos d'un client
+static int countClientPhotos(String clientId) {
+  final client = getClientById(clientId);
+  if (client == null) {
+    print('⚠️ Client non trouvé: $clientId');
+    return 0;
+  }
+  
+  return client.photos.length;
+}
+
+/// Obtenir la dernière photo ajoutée d'un client
+static String? getLastClientPhoto(String clientId) {
+  final client = getClientById(clientId);
+  if (client == null || client.photos.isEmpty) {
+    return null;
+  }
+  
+  return client.photos.last;
+}
+
+/// Rechercher des photos par nom de fichier (partiel)
+static List<String> searchClientPhotos({
+  required String clientId,
+  required String searchTerm,
+}) {
+  final client = getClientById(clientId);
+  if (client == null) {
+    return [];
+  }
+  
+  return client.photos
+      .where((photo) => photo.toLowerCase().contains(searchTerm.toLowerCase()))
+      .toList();
+}
+
+/// Obtenir le résumé des photos d'un client
+static Map<String, dynamic> getClientPhotosSummary(String clientId) {
+  final client = getClientById(clientId);
+  if (client == null) {
+    return {
+      'hasPhotos': false,
+      'count': 0,
+      'lastPhoto': null,
+      'photos': [],
+    };
+  }
+  
+  return {
+    'hasPhotos': client.photos.isNotEmpty,
+    'count': client.photos.length,
+    'lastPhoto': client.photos.isNotEmpty ? client.photos.last : null,
+    'photos': List<String>.from(client.photos),
+  };
+}
+
+/// Exporter les photos d'un client pour backup
+static Future<Map<String, dynamic>> exportClientPhotos(String clientId) async {
+  final client = getClientById(clientId);
+  if (client == null) {
+    return {
+      'clientId': clientId,
+      'error': 'Client non trouvé',
+      'photos': [],
+      'exportDate': DateTime.now().toIso8601String(),
+    };
+  }
+  
+  return {
+    'clientId': clientId,
+    'clientName': client.nom,
+    'photoCount': client.photos.length,
+    'photos': List<String>.from(client.photos),
+    'exportDate': DateTime.now().toIso8601String(),
+  };
+}
+
+/// Importer des photos pour un client
+static Future<bool> importClientPhotos({
+  required String clientId,
+  required List<String> photos,
+  required bool replaceExisting,
+}) async {
+  try {
+    final client = getClientById(clientId);
+    if (client == null) {
+      print('❌ Client non trouvé pour import: $clientId');
+      return false;
+    }
+    
+    if (replaceExisting) {
+      client.photos.clear();
+    }
+    
+    client.photos.addAll(photos);
+    await client.save();
+    
+    print('✅ ${photos.length} photos importées pour client: $clientId');
+    print('   Mode: ${replaceExisting ? "remplacement" : "ajout"}');
+    print('   Total après import: ${client.photos.length}');
+    
+    return true;
+  } catch (e) {
+    print('❌ Erreur importClientPhotos: $e');
+    return false;
+  }
+}
+
+/// Copier les photos d'un client vers un autre client
+static Future<bool> copyClientPhotos({
+  required String sourceClientId,
+  required String targetClientId,
+  required bool replaceExisting,
+}) async {
+  try {
+    final sourceClient = getClientById(sourceClientId);
+    final targetClient = getClientById(targetClientId);
+    
+    if (sourceClient == null || targetClient == null) {
+      print('❌ Client(s) non trouvé(s)');
+      return false;
+    }
+    
+    if (sourceClient.photos.isEmpty) {
+      print('⚠️ Client source n\'a pas de photos à copier');
+      return false;
+    }
+    
+    if (replaceExisting) {
+      targetClient.photos.clear();
+    }
+    
+    targetClient.photos.addAll(List<String>.from(sourceClient.photos));
+    await targetClient.save();
+    
+    print('✅ ${sourceClient.photos.length} photos copiées de $sourceClientId vers $targetClientId');
+    print('   Mode: ${replaceExisting ? "remplacement" : "ajout"}');
+    
+    return true;
+  } catch (e) {
+    print('❌ Erreur copyClientPhotos: $e');
+    return false;
+  }
+}
+
+/// Trier les photos d'un client (par nom de fichier)
+static Future<bool> sortClientPhotos(String clientId) async {
+  try {
+    final client = getClientById(clientId);
+    if (client == null) {
+      print('❌ Client non trouvé: $clientId');
+      return false;
+    }
+    
+    client.photos.sort();
+    await client.save();
+    
+    print('✅ Photos triées pour client: $clientId');
+    return true;
+  } catch (e) {
+    print('❌ Erreur sortClientPhotos: $e');
+    return false;
+  }
+}
+
+/// Récupérer les chemins uniques des photos d'un client
+static List<String> getUniqueClientPhotos(String clientId) {
+  final client = getClientById(clientId);
+  if (client == null) {
+    return [];
+  }
+  
+  return client.photos.toSet().toList();
+}
+
+/// Vérifier si une photo existe déjà pour un client
+static bool clientPhotoExists({
+  required String clientId,
+  required String cheminPhoto,
+}) {
+  final client = getClientById(clientId);
+  if (client == null) {
+    return false;
+  }
+  
+  return client.photos.contains(cheminPhoto);
+}
+
+/// Obtenir les photos des clients avec un certain type
+static Map<String, List<String>> getPhotosByClientType(String clientType) {
+  final clients = getClientsByType(clientType);
+  final result = <String, List<String>>{};
+  
+  for (final client in clients) {
+    if (client.photos.isNotEmpty) {
+      result[client.id] = List<String>.from(client.photos);
+    }
+  }
+  
+  return result;
+}
+
+/// Obtenir le nombre total de photos pour tous les clients
+static int getTotalClientPhotos() {
+  final clients = getAllClients();
+  return clients.fold(0, (total, client) => total + client.photos.length);
+}
+
+/// Obtenir les clients ayant au moins une photo
+static List<Client> getClientsWithPhotos() {
+  return getAllClients().where((client) => client.photos.isNotEmpty).toList();
+}
+
+/// Obtenir les clients sans photos
+static List<Client> getClientsWithoutPhotos() {
+  return getAllClients().where((client) => client.photos.isEmpty).toList();
+}
+
+/// Obtenir les statistiques des photos par type de client
+static Map<String, dynamic> getPhotoStatsByClientType() {
+  final stats = <String, dynamic>{};
+  final clients = getAllClients();
+  
+  for (final client in clients) {
+    final type = client.type;
+    if (!stats.containsKey(type)) {
+      stats[type] = {
+        'clientCount': 0,
+        'totalPhotos': 0,
+        'clientsWithPhotos': 0,
+      };
+    }
+    
+    final typeStats = stats[type] as Map<String, dynamic>;
+    typeStats['clientCount'] = (typeStats['clientCount'] as int) + 1;
+    typeStats['totalPhotos'] = (typeStats['totalPhotos'] as int) + client.photos.length;
+    
+    if (client.photos.isNotEmpty) {
+      typeStats['clientsWithPhotos'] = (typeStats['clientsWithPhotos'] as int) + 1;
+    }
+  }
+  
+  return stats;
+}
 }

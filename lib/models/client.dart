@@ -37,6 +37,10 @@ class Client extends HiveObject {
   @HiveField(10)
   DateTime dateInscription;
 
+  // NOUVEAU CHAMP : Liste simple de photos
+  @HiveField(11)
+  List<String> photos;
+
   Client({
     required this.id,
     required this.nom,
@@ -49,6 +53,7 @@ class Client extends HiveObject {
     required this.type,
     this.refrigerateurIds = const [],
     required this.dateInscription,
+    this.photos = const [],
   });
 
   factory Client.fromJson(Map<String, dynamic> json) {
@@ -66,6 +71,7 @@ class Client extends HiveObject {
       dateInscription: json['date_inscription'] != null
           ? DateTime.parse(json['date_inscription'])
           : DateTime.now(),
+      photos: List<String>.from(json['photos'] ?? []),
     );
   }
 
@@ -82,6 +88,49 @@ class Client extends HiveObject {
       'type': type,
       'refrigerateur_ids': refrigerateurIds,
       'date_inscription': dateInscription.toIso8601String(),
+      'photos': photos,
     };
+  }
+
+  // ==================== MÉTHODES UTILITAIRES SIMPLES ====================
+
+  /// Ajouter une photo à la liste
+  void ajouterPhoto(String cheminPhoto) {
+    photos.add(cheminPhoto);
+  }
+
+  /// Ajouter plusieurs photos à la fois
+  void ajouterPlusieursPhotos(List<String> cheminsPhotos) {
+    photos.addAll(cheminsPhotos);
+  }
+
+  /// Supprimer une photo spécifique
+  bool supprimerPhoto(String cheminPhoto) {
+    return photos.remove(cheminPhoto);
+  }
+
+  /// Vérifier si une photo existe
+  bool photoExiste(String cheminPhoto) {
+    return photos.contains(cheminPhoto);
+  }
+
+  /// Vérifier si le client a des photos
+  bool get aDesPhotos {
+    return photos.isNotEmpty;
+  }
+
+  /// Compter le nombre de photos
+  int get nombrePhotos {
+    return photos.length;
+  }
+
+  /// Obtenir la dernière photo ajoutée
+  String? get dernierePhoto {
+    return photos.isNotEmpty ? photos.last : null;
+  }
+
+  /// Vider toutes les photos
+  void viderPhotos() {
+    photos.clear();
   }
 }
